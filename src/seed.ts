@@ -25,5 +25,8 @@ const metrics = NUMBER_OF_METRICS.map((_, index) => {
 })
 
 repo.batchInsertSoldTicketMetrics(metrics)
-  .then(() => logger.info('Done!'))
+  .then(() => {
+    repo.shutdown()
+      .then(() => logger.info('Done!'))
+  })
   .catch((err) => logger.error('Error in seed', err))

@@ -6,6 +6,7 @@ import { Logger } from "@sailplane/logger";
 
 const logger = new Logger("MetricsRepository")
 
+// Aggregation functions: https://opensource.docs.scylladb.com/stable/cql/functions.html
 export class MetricsRepository {
   client: Client
 
@@ -19,6 +20,10 @@ export class MetricsRepository {
       query: `INSERT INTO catalog.metrics (eventId, value, ranAt) VALUES (?, ?, ?)`,
       params: [metric.eventId, metric.value, metric.ranAt.getTime()]
     }
+  }
+
+  async shutdown() {
+    await this.client.shutdown()
   }
 
   async insertSoldTicketMetric(metric: SoldTicketMetric) {

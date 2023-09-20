@@ -10,5 +10,8 @@ const logger = new Logger('Seed')
 
 
 repo.getSoldMetricsBetween("testId0", START_DATE, new Date())
-  .then(() => logger.info('Done!'))
+  .then(() => {
+    repo.shutdown()
+      .then(() => logger.info('Done!'))
+  })
   .catch((err) => logger.error('Error in seed', err))
