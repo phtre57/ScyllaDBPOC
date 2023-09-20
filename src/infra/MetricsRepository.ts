@@ -14,39 +14,44 @@ export class MetricsRepository {
     this.client.connect()
   }
 
-  private createInsertQuery(metric: SoldTicketMetric) {
-    return `INSERT INTO metrics (eventId, value, ranAt) VALUES (${metric.eventId}, ${metric.value}, ${metric.ranAt.getTime()})`
+  private createInsertQuery(metric: SoldTicketMetric): { query: string, params: Array<any>} {
+    return {
+      query: `INSERT INTO catalog.metrics (eventId, value, ranAt) VALUES (?, ?, ?)`,
+      params: [metric.eventId, metric.value, metric.ranAt.getTime()]
+    }
   }
 
   async insertSoldTicketMetric(metric: SoldTicketMetric) {
-    const query = this.createInsertQuery(metric)
-    const result = await this.client.execute(query)
+    const options = this.createInsertQuery(metric)
+    const result = await this.client.execute(options.query, options.params, { prepare: true })
     logger.info("Result insert sold metrics", result)
     return result
   }
 
   async batchInsertSoldTicketMetrics(metrics: SoldTicketMetric[]) {
-    const queries = metrics.map((metric) => this.createInsertQuery(metric))
-    const result = await this.client.batch(queries)
+    const options = metrics.map((metric) => this.createInsertQuery(metric))
+    const result = await this.client.batch(options, { prepare: true })
     logger.info("Result batch insert sold metrics", result)
     return result
   }
 
-  async getSoldMetricsBetween(start: Date, end: Date) {
+  async getSoldMetricsBetween(eventId: string, start: Date, end: Date) {
     const query = `
       SELECT * FROM catalog.metrics
-      WHERE ranAt >= ${start.getTime()} AND ranAt <= ${end.getTime()};
+      WHERE eventId = ?
+      AND ranAt >= ? AND ranAt <= ?;
     `
-    const result = await this.client.execute(query)
-    logger.info("Result get sold metrics", result)
+    const params = [eventId, start.getTime(), end.getTime()]
+    const result = await this.client.execute(query, params, { prepare: true })
+    logger.info("Result get sold metrics", result.rows)
     return result
   }
 }
 
 const create = () => {
   const client = new Client({
-    contactPoints: ['scylla'],
-    localDataCenter: 'DC1',
+    contactPoints: ['127.0.0.1'],
+    localDataCenter: 'datacenter1',
     keyspace: 'catalog',
   })
   const repo = new MetricsRepository({ client })
