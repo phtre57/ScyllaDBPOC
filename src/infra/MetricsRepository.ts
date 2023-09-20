@@ -37,9 +37,10 @@ export class MetricsRepository {
 
   async getSoldMetricsBetween(eventId: string, start: Date, end: Date) {
     const query = `
-      SELECT * FROM catalog.metrics
+      SELECT eventId, SUM(value) AS total FROM catalog.metrics
       WHERE eventId = ?
-      AND ranAt >= ? AND ranAt <= ?;
+      AND ranAt >= ? AND ranAt <= ?
+      GROUP BY eventId;
     `
     const params = [eventId, start.getTime(), end.getTime()]
     const result = await this.client.execute(query, params, { prepare: true })
