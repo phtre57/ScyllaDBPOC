@@ -17,7 +17,7 @@ export class MetricsRepository {
 
   private createInsertQuery(metric: SoldTicketMetric): { query: string, params: Array<any>} {
     return {
-      query: `INSERT INTO catalog.metrics (eventId, value, ranAt) VALUES (?, ?, ?)`,
+      query: `INSERT INTO catalog1.metrics (eventId, value, ranAt) VALUES (?, ?, ?)`,
       params: [metric.eventId, metric.value, metric.ranAt.getTime()]
     }
   }
@@ -42,7 +42,7 @@ export class MetricsRepository {
 
   async getSoldMetricsBetween(eventId: string, start: Date, end: Date) {
     const query = `
-      SELECT eventId, SUM(value) AS total FROM catalog.metrics
+      SELECT eventId, SUM(value) AS total FROM catalog1.metrics
       WHERE eventId = ?
       AND ranAt >= ? AND ranAt <= ?
       GROUP BY eventId;

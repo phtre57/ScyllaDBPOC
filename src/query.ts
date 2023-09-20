@@ -9,9 +9,14 @@ const repo = Injector.get(MetricsRepository)!
 const logger = new Logger('Seed')
 
 
-repo.getSoldMetricsBetween("testId0", START_DATE, new Date())
+repo.getSoldMetricsBetween("1", START_DATE, new Date())
   .then(() => {
+    logger.error('Done!')
     repo.shutdown()
-      .then(() => logger.info('Done!'))
+      .then(() => logger.info('Repo shutdown!'))
   })
-  .catch((err) => logger.error('Error in seed', err))
+  .catch((err) => {
+    logger.error('Error in seed', err)
+    repo.shutdown()
+    .then(() => logger.info('Repo shutdown!'))
+  })
